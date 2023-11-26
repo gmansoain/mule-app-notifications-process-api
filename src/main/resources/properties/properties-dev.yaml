@@ -1,0 +1,15 @@
+email-sapi:
+  host: "mule-email-system-api-17ekvx.a671fi.gbr-e1.cloudhub.io"
+  basePath: "api"
+
+twilio-sapi:
+  host: "twilio-system-api-17ekvx.a671fi.gbr-e1.cloudhub.io"
+  basePath: "api"
+
+slack-sapi:
+  host: "mule-slack-system-api-17ekvx.a671fi.gbr-e1.cloudhub.io"
+  basePath: "api"
+
+system-apis:
+  client_id: "e61b07bf92544446a6914f2496c646ba"
+  client_secret: "e6aD4d32CBc043cdb6f2387ac87b6259"

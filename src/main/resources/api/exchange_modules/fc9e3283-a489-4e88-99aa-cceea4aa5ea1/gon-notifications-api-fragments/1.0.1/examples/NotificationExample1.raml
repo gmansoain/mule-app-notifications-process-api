@@ -1,0 +1,31 @@
+#%RAML 1.0 NamedExample
+{
+  "channel": {
+    "email": true,
+    "slack": true,
+    "sms": true,
+    "whatsapp": true
+  },
+"messages": {
+  "email": {
+    "from": "no-reply@example.com",
+    "to": "gmarcos@salesforce.com",
+    "subject": "SUCCESS - Your email has arrived",
+    "message": "This is an email from the Email sAPI"
+    },
+  "slack": {
+    "channel": "mule-channel",
+    "message": "Hello From the Slack System API!"
+    },
+  "sms": {
+    "fromNumber": "+447869543211",
+    "toNumber": "+34699835420",
+    "message": "This is a message from a Mule App"
+    },
+  "whatsapp": {
+    "fromNumber": "+447849543211",
+    "toNumber": "+34646835720",
+    "message": "This is another message from a Mule App"
+    }
+  }
+}

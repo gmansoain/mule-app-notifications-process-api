@@ -1,0 +1,24 @@
+#%RAML 1.0
+title: Notifications Process API
+mediaType: 
+- application/json
+
+uses:
+  common: /exchange_modules/fc9e3283-a489-4e88-99aa-cceea4aa5ea1/gon-common-api-fragments/1.0.4/gon-common-api-fragments.raml
+
+types:
+  Notification: !include /exchange_modules/fc9e3283-a489-4e88-99aa-cceea4aa5ea1/gon-notifications-api-fragments/1.0.1/datatypes/Notification.raml
+  Response201: !include /exchange_modules/fc9e3283-a489-4e88-99aa-cceea4aa5ea1/gon-notifications-api-fragments/1.0.1/datatypes/Response201.raml
+
+/notifications:
+  post:
+    is: [common.client-id-required, common.error-responses]
+    description: Sends notification across selected channels
+    displayName: Send Notification
+    body:
+      type: Notification
+    responses:
+      201:
+        body:
+          type: Response201
+

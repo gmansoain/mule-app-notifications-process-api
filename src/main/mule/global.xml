@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<http:request-config name="HTTP_Request_Email_sAPI" doc:name="HTTP Request configuration" doc:id="f8a43c0e-589d-4022-a0ff-369300f507e4" basePath="/${email-sapi.basePath}" >
+		<http:request-connection protocol="HTTPS" host="${email-sapi.host}" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_Twilio_sAPI" doc:name="HTTP Request configuration" doc:id="ee1be8e1-0b48-4fe1-acac-123837ece655" basePath="/${twilio-sapi.basePath}" >
+		<http:request-connection protocol="HTTPS" host="${twilio-sapi.host}" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_Slack_sAPI" doc:name="HTTP Request configuration" doc:id="745f111e-708c-4066-b855-a3c9bd13ac69" basePath="/${slack-sapi.basePath}" >
+		<http:request-connection protocol="HTTPS" host="${slack-sapi.host}" />
+	</http:request-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="1fb39bfc-d481-40f6-a8dc-5fb64e2e2ac5" file="properties/properties-${env}.yaml" />
+	<global-property doc:name="Global Property" doc:id="4de83645-9f78-4d4d-a0a8-6e2654fda4bc" name="env" value="${env}" />
+	<api-gateway:autodiscovery apiId="${api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="d77c14a5-51e3-4bdc-ae38-4a9fd162da97" flowRef="notifications-process-api-main" />
+</mule>

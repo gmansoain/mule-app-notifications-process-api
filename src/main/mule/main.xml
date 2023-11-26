@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_TESTS" doc:name="HTTP Listener config" doc:id="893345d2-cd69-4db1-b751-cff2006e4389" >
+		<http:listener-connection host="0.0.0.0" port="8085" />
+	</http:listener-config>
+	<flow name="sendNotification" doc:id="fb59e7dc-bf49-4be8-ab30-c22f68a0a48d" >
+		<http:listener doc:name="Listener" doc:id="b60e7b19-df3a-400a-82c9-5b305c512ff8" config-ref="HTTP_Listener_TESTS" path="/notifications" allowedMethods="POST"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="f98267a3-bab9-47ac-b0c4-2878c701542e" >
+			<route >
+				<set-variable value="#[payload.channel.sms]" doc:name="sendSMS?" doc:id="a2d11afb-961f-4423-9acf-dad1d5cd4e40" variableName="sendSMS"/>
+				<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  "message": payload.messages.sms.message&#10;}]' doc:name="SMSMessage" doc:id="55eb658f-ea0d-4b05-aa40-21c309d789d8" variableName="SMSMessage"/>
+			</route>
+			<route >
+				<set-variable value="#[payload.channel.slack]" doc:name="sendSlack?" doc:id="2e5e07b2-af49-4c54-a90a-ca6818313ee4" variableName="sendSlack"/>
+				<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  "channel": payload.messages.slack.channel,&#10;  "message": payload.messages.slack.message&#10;}]' doc:name="slackMessage" doc:id="82741c90-4327-4d4c-b7cf-cf37f6a3f0cc" variableName="slackMessage"/>
+			</route>
+			<route >
+				<set-variable value="#[payload.channel.email]" doc:name="sendEmail?" doc:id="53d223d1-f0c7-4feb-a6da-66ddd69d5057" variableName="sendEmail" />
+				<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  "from": payload.messages.email.from,&#10;  "to": payload.messages.email.to,&#10;  "subject": payload.messages.email.subject,&#10;  "message": payload.messages.email.message&#10;}]' doc:name="emailMessage" doc:id="bb32bc6c-6328-4d14-81df-1f026c61fbdc" variableName="emailMessage"/>
+			</route>
+			<route >
+				<set-variable value="#[payload.channel.whatsapp]" doc:name="sendWhatsapp?" doc:id="8038833d-bb14-41ae-8889-ad5872a6e18b" variableName="sendWhatsapp"/>
+				<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  "message": payload.messages.whatsapp.message&#10;}]' doc:name="whatsappMessage" doc:id="6071acec-b50d-458e-acc2-585caee9edd8" variableName="whatsappMessage"/>
+			</route>
+		</scatter-gather>
+		<choice doc:name="Choice" doc:id="d0c63566-c4c6-4861-93ab-da6e5227bc83" >
+			<when expression="#[vars.sendSlack == true]" >
+				<http:request method="POST" doc:name="slack" doc:id="0bb14bab-80ed-4d87-aeda-525c7acb2dad" config-ref="HTTP_Request_Slack_sAPI" path="/message">
+					<http:body><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+  "channel": vars.slackMessage.channel,
+  "message": vars.slackMessage.message
+}]]]></http:body>
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p("system-apis.client_secret"),
+	"client_id" : p("system-apis.client_id")
+}]]]></http:headers>
+				</http:request>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="5512335a-6c79-4a9c-9fc5-c1b6c220895d" message='#["No slack sent"]'/>
+			</otherwise>
+		</choice>
+		<choice doc:name="Choice" doc:id="72a87875-826f-435d-bf26-4fd58632da6b">
+					<when expression="#[vars.sendEmail == true]">
+						<http:request method="POST" doc:name="email" doc:id="b9f692ea-47ab-48bf-bf93-b9748fc662c2" config-ref="HTTP_Request_Email_sAPI" path="/message">
+					<http:body><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+  "from": vars.emailMessage.from,
+  "to": vars.emailMessage.to,
+  "subject": vars.emailMessage.subject,
+  "message": vars.emailMessage.message
+}]]]></http:body>
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p("system-apis.client_secret"),
+	"client_id" : p("system-apis.client_id")
+}]]]></http:headers>
+				</http:request>
+					</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="3e27f0fd-106d-4391-8109-b2e3d1bb8565" message='#["No email sent"]'/>
+			</otherwise>
+				</choice>
+		<choice doc:name="Choice" doc:id="8db90f49-350f-4ab8-8172-5d27eba30cf1" >
+			<when expression="#[vars.sendSMS == true]">
+				<http:request method="POST" doc:name="sms" doc:id="8ac9343e-96b4-47ff-b127-76c54f9c50ae" config-ref="HTTP_Request_Twilio_sAPI" path="/sms/message">
+					<http:body><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+  "message": vars.SMSMessage.message
+}]]]></http:body>
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p("system-apis.client_secret"),
+	"client_id" : p("system-apis.client_id")
+}]]]></http:headers>
+				</http:request>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="06c84696-9d4c-4fcc-81db-788bbea2915a" message='#["No SMS slack"]'/>
+			</otherwise>
+		</choice>
+		<choice doc:name="Choice" doc:id="0669d102-cf23-4ef8-a04f-992f30bb7c06" >
+			<when expression="#[vars.sendWhatsapp == true]">
+				<http:request method="POST" doc:name="Request" doc:id="4d7c13b8-d7d3-4712-b395-b4b7a9dddfb9" config-ref="HTTP_Request_Twilio_sAPI" path="/whatsapp/message">
+					<http:body ><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+  "message": vars.whatsappMessage.message
+}]]]></http:body>
+					<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p("system-apis.client_secret"),
+	"client_id" : p("system-apis.client_id")
+}]]]></http:headers>
+				</http:request>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="ad8d0a64-be24-4344-891e-f4fc67a32588" />
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
